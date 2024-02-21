@@ -4,11 +4,13 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.commands.ArcadeDrive;
 import frc.robot.commands.ArcadeDriveWithBrakes;
+import frc.robot.commands.ArcadeDrivewithbutton;
 import frc.robot.commands.AutonomousDistance;
 import frc.robot.commands.AutonomousTime;
 import frc.robot.subsystems.Drivetrain;
@@ -30,6 +32,8 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final Drivetrain m_drivetrain = new Drivetrain();
   private final OnBoardIO m_onboardIO = new OnBoardIO(ChannelMode.INPUT, ChannelMode.INPUT);
+
+  private final AnalogInput m_A4 = new AnalogInput (4);
 
   // Assumes a gamepad plugged into channel 0
   private final Joystick m_controller = new Joystick(0);
@@ -94,8 +98,11 @@ public class RobotContainer {
   public Command getArcadeDriveCommand() {
 //    return new ArcadeDrive(
 //        m_drivetrain, () -> -m_controller.getRawAxis(1), () -> -m_controller.getRawAxis(2));
-    return new ArcadeDriveWithBrakes(
-        m_drivetrain, () -> -m_controller.getRawAxis(5), () -> -m_controller.getRawAxis(4),
-                      () -> m_controller.getRawAxis(2), () -> m_controller.getRawAxis(3));
+//    return new ArcadeDriveWithBrakes(
+//        m_drivetrain, () -> -m_controller.getRawAxis(5), () -> -m_controller.getRawAxis(4),
+//                      () -> m_controller.getRawAxis(2), () -> m_controller.getRawAxis(3));
+    return new ArcadeDrivewithbutton(
+          m_drivetrain, () -> -m_controller.getRawAxis(5), () -> -m_controller.getRawAxis(4), 
+          m_A4);                      
   }
 }
