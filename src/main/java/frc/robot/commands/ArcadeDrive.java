@@ -9,9 +9,9 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import java.util.function.Supplier;
 
 public class ArcadeDrive extends CommandBase {
-  private final Drivetrain m_drivetrain;
-  private final Supplier<Double> m_xaxisSpeedSupplier;
-  private final Supplier<Double> m_zaxisRotateSupplier;
+  protected final Drivetrain m_drivetrain;
+  protected final Supplier<Double> m_xaxisSpeedSupplier;
+  protected final Supplier<Double> m_zaxisRotateSupplier;
 
   /**
    * Creates a new ArcadeDrive. This command will drive your robot according to the speed supplier
