@@ -4,10 +4,12 @@
 
 package frc.robot.subsystems;
 
+import frc.robot.Constants;
+import frc.robot.sensors.RomiGyro;
 import edu.wpi.first.wpilibj.BuiltInAccelerometer;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import frc.robot.sensors.RomiGyro;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive.WheelSpeeds;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -34,6 +36,8 @@ public class Drivetrain extends SubsystemBase {
   // Set up the BuiltInAccelerometer
   private final BuiltInAccelerometer m_accelerometer = new BuiltInAccelerometer();
 
+  private final boolean m_applyWheelSpeedMatchingCalibration;
+
   /** Creates a new Drivetrain. */
   public Drivetrain() {
     // We need to invert one side of the drivetrain so that positive voltages
@@ -45,16 +49,67 @@ public class Drivetrain extends SubsystemBase {
     m_leftEncoder.setDistancePerPulse((Math.PI * kWheelDiameterInch) / kCountsPerRevolution);
     m_rightEncoder.setDistancePerPulse((Math.PI * kWheelDiameterInch) / kCountsPerRevolution);
     resetEncoders();
+
+    if (Math.abs(Constants.WheelSpeedMatchingAttenuationFactor) < 1.0) {
+      m_applyWheelSpeedMatchingCalibration = true;
+    } else {
+      m_applyWheelSpeedMatchingCalibration = false;
+      System.out.println(String.format(
+        "Warning: WheelSpeedMatchingAttenuationFactor is out of range and will be ignored." +
+        "Actual value: %.2f  Allowed range: (-1.0 .. +1.0)",
+        Constants.WheelSpeedMatchingAttenuationFactor));
+    }
   }
 
   public void arcadeDrive(double xaxisSpeed, double zaxisRotate) {
-    m_diffDrive.arcadeDrive(xaxisSpeed, zaxisRotate);
+    m_diffDrive.arcadeDrive(xaxisSpeed, zaxisRotate, true);
+  }
+
+  public void arcadeDriveCalibrated(double xaxisSpeed, double zaxisRotate) {
+    //Question: Should we ignore deadband in the Autos case?
+    //xaxisSpeed = xaxisSpeed + Math.copySign(Constants.DeadbandCompensationForAutos, xaxisSpeed);
+    
+    double leftSpeed =  (xaxisSpeed - zaxisRotate);
+    double rightSpeed = (xaxisSpeed + zaxisRotate);
+    WheelSpeeds speeds = new WheelSpeeds(leftSpeed, rightSpeed);
+    
+    speeds = applyWheelSpeedMatchingCalibration(speeds);
+
+    speeds = removeSaturation(speeds, xaxisSpeed, zaxisRotate);
+
+    m_diffDrive.tankDrive(speeds.left, speeds.right, false);
   }
 
   public void tankDrive(double leftSpeed, double rightSpeed) {
-    m_diffDrive.tankDrive(leftSpeed, rightSpeed);
+    m_diffDrive.tankDrive(leftSpeed, rightSpeed, true);
   }
 
+  private WheelSpeeds applyWheelSpeedMatchingCalibration(WheelSpeeds wheelSpeeds) {
+    if (!m_applyWheelSpeedMatchingCalibration) { return wheelSpeeds; }
+    if (Constants.WheelSpeedMatchingAttenuationFactor > 0.0)
+    {
+      wheelSpeeds.left = wheelSpeeds.left * (1-Constants.WheelSpeedMatchingAttenuationFactor);
+    }
+    if (Constants.WheelSpeedMatchingAttenuationFactor < 0.0)
+    {
+      wheelSpeeds.right = wheelSpeeds.right * (1-Constants.WheelSpeedMatchingAttenuationFactor);
+    }
+    return wheelSpeeds;
+  }
+
+  private WheelSpeeds removeSaturation(WheelSpeeds wheelSpeeds, double xSpeed, double zRotation) {
+    // Find the maximum possible value of (throttle + turn) along the vector
+    // that the joystick is pointing, then desaturate the wheel speeds
+    double greaterInput = Math.max(Math.abs(xSpeed), Math.abs(zRotation));
+    double lesserInput = Math.min(Math.abs(xSpeed), Math.abs(zRotation));
+    if (greaterInput == 0.0) {
+      return new WheelSpeeds(0.0, 0.0);
+    }
+    double saturatedInput = (greaterInput + lesserInput) / greaterInput;
+    return new WheelSpeeds(wheelSpeeds.left  / saturatedInput, 
+                           wheelSpeeds.right / saturatedInput);
+  }
+  
   public void resetEncoders() {
     m_leftEncoder.reset();
     m_rightEncoder.reset();

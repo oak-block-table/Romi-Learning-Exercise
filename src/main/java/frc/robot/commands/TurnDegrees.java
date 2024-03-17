@@ -22,7 +22,7 @@ public class TurnDegrees extends CommandBase {
    */
   public TurnDegrees(double speed, double degrees, Drivetrain drive) {
     m_degrees = degrees;
-    m_speed = speed;
+    m_speed = Math.abs(speed) * ((m_degrees >= 0) ? -1 : 1);
     m_drive = drive;
     addRequirements(drive);
   }
@@ -57,7 +57,7 @@ public class TurnDegrees extends CommandBase {
     */
     double inchPerDegree = Math.PI * 5.551 / 360;
     // Compare distance travelled from start to distance based on degree turn
-    return getAverageTurningDistance() >= (inchPerDegree * m_degrees);
+    return Math.abs(getAverageTurningDistance()) >= Math.abs(inchPerDegree * m_degrees);
   }
 
   private double getAverageTurningDistance() {

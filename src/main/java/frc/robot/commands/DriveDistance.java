@@ -32,18 +32,20 @@ public class DriveDistance extends CommandBase {
   public void initialize() {
     m_drive.arcadeDrive(0, 0);
     m_drive.resetEncoders();
+    logCurrentState();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_drive.arcadeDrive(m_speed, 0);
+    m_drive.arcadeDriveCalibrated(m_speed, 0);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
     m_drive.arcadeDrive(0, 0);
+    logCurrentState();
   }
 
   // Returns true when the command should end.
@@ -51,5 +53,11 @@ public class DriveDistance extends CommandBase {
   public boolean isFinished() {
     // Compare distance travelled from start to desired distance
     return Math.abs(m_drive.getAverageDistanceInch()) >= m_distance;
+  }
+
+  private void logCurrentState() {
+    System.out.println(String.format(
+        "Left Encoder = %6d | Right Encoder = %6d | Gyro Z angle = %6.2f" ,
+        m_drive.getLeftEncoderCount(), m_drive.getRightEncoderCount(), m_drive.getGyroAngleZ()));
   }
 }

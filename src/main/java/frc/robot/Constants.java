@@ -12,4 +12,14 @@ package frc.robot;
  * <p>It is advised to statically import this class (or one of its inner classes) wherever the
  * constants are needed, to reduce verbosity.
  */
-public final class Constants {}
+public final class Constants {
+    public final static double DeadbandCompensationForAutos = 0.02;
+    
+    // Attenuates power sent to one wheel or the other 
+    // Range: (-1.0 to +1.0) - positive values slow down the left
+    public final static double WheelSpeedMatchingAttenuationFactor =  0.045;
+
+    // Scale: -1.0 and +1.0 represent maximum reverse and forward motor speeds
+    public final static double CalibrationDriveSpeed = -0.4;
+    public final static double CalibrationDriveDistanceInches = 10;
+}
