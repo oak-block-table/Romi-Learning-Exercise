@@ -8,19 +8,18 @@ import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
-import frc.robot.commands.ArcadeDrive;
-import frc.robot.commands.ArcadeDriveWithBrakes;
-import frc.robot.commands.ArcadeDrivewithbutton;
-import frc.robot.commands.AutonomousDistance;
-import frc.robot.commands.AutonomousTime;
-import frc.robot.subsystems.Drivetrain;
-import frc.robot.subsystems.OnBoardIO;
-import frc.robot.subsystems.OnBoardIO.ChannelMode;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.AssistedFollowWall;
+import frc.robot.commands.AutonomousDistance;
+import frc.robot.commands.AutonomousTime;
+import frc.robot.sensors.DistanceSensor;
+import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.OnBoardIO;
+import frc.robot.subsystems.OnBoardIO.ChannelMode;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -32,8 +31,9 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final Drivetrain m_drivetrain = new Drivetrain();
   private final OnBoardIO m_onboardIO = new OnBoardIO(ChannelMode.INPUT, ChannelMode.INPUT);
-
-  private final AnalogInput m_A4 = new AnalogInput (4);
+  // Using PD4 4, A6, 24 LCD control line (RS) Analog input (ADC8)
+  // Remember to connect to the wpilib.local web UI on the bot to make sure this is mapped
+  private final DistanceSensor distanceSensor = new DistanceSensor(2);
 
   // Assumes a gamepad plugged into channel 0
   private final Joystick m_controller = new Joystick(0);
@@ -46,9 +46,11 @@ public class RobotContainer {
   // By default, the following are available (listed in order from inside of the board to outside):
   // - DIO 8 (mapped to Arduino pin 11, closest to the inside of the board)
   // - Analog In 0 (mapped to Analog Channel 6 / Arduino Pin 4)
+  //    aka PD4 4, A6, 24 LCD control line (RS) Analog input (ADC8)
   // - Analog In 1 (mapped to Analog Channel 2 / Arduino Pin 20)
   // - PWM 2 (mapped to Arduino Pin 21)
   // - PWM 3 (mapped to Arduino Pin 22)
+  //    aka PF1 A4, 22 Free I/O Analog input (ADC1)?
   //
   // Your subsystem configuration should take the overlays into account
 
@@ -96,13 +98,19 @@ public class RobotContainer {
    * @return the command to run in teleop
    */
   public Command getArcadeDriveCommand() {
+// Original Example:
 //    return new ArcadeDrive(
 //        m_drivetrain, () -> -m_controller.getRawAxis(1), () -> -m_controller.getRawAxis(2));
+// Exercise #1:
 //    return new ArcadeDriveWithBrakes(
 //        m_drivetrain, () -> -m_controller.getRawAxis(5), () -> -m_controller.getRawAxis(4),
 //                      () -> m_controller.getRawAxis(2), () -> m_controller.getRawAxis(3));
-    return new ArcadeDrivewithbutton(
-          m_drivetrain, () -> -m_controller.getRawAxis(5), () -> -m_controller.getRawAxis(4), 
-          m_A4);                      
+
+// Exercise #2 - These attempts were not tested due to hardware issues:
+//    return new ArcadeDrivewithbutton(
+//          m_drivetrain, () -> -m_controller.getRawAxis(5), () -> -m_controller.getRawAxis(4), 
+//          m_A4);
+    return new AssistedFollowWall(
+        m_drivetrain, distanceSensor, () -> -m_controller.getRawAxis(1));
   }
 }
