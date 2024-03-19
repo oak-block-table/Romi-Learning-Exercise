@@ -13,6 +13,9 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+    // We considered using this to remove the deadband when calibrating Auto sequences
+    // However, this factor is probably smaller than the contribution of assumptions 
+    // that we made during this exercise.  So, we are not adding in this correction for now.
     public final static double DeadbandCompensationForAutos = 0.02;
     
     // Attenuates power sent to one wheel or the other 

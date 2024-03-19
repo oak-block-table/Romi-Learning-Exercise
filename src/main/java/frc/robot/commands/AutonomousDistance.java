@@ -17,6 +17,14 @@ public class AutonomousDistance extends SequentialCommandGroup {
    */
   public AutonomousDistance(Drivetrain drivetrain) {
     addCommands(
+    /**
+      new WaitSeconds(0.6, drivetrain),
+      new DriveDistance(Constants.CalibrationDriveSpeed, 160, drivetrain),
+      new TurnDegrees(0.5, 175, drivetrain),
+      new WaitSeconds(0.6, drivetrain),
+      new DriveDistance(Constants.CalibrationDriveSpeed, 160, drivetrain),
+      new TurnDegrees(0.5, 175, drivetrain));
+    */
         new WaitSeconds(0.6, drivetrain),
         new DriveDistance(Constants.CalibrationDriveSpeed, Constants.CalibrationDriveDistanceInches, drivetrain),
         new TurnDegrees(0.5, 180, drivetrain),
